@@ -1,4 +1,92 @@
+/*
+Questions:
+
+*/
+`timescale 1ns/1ps
 module tb;
 
+localparam DATA_WIDTH = 8;
+localparam ClockPeriod = 8.381ns;
+localparam NumTests = 3;
+
+// Variable Declaration
+
+logic                   clk_i;
+logic                   rst_i = 1;
+wire [15:0]             prescale_w = 1; // Change this
+
+
+logic   [DATA_WIDTH-1:0]   data_tb_i; 
+logic   [DATA_WIDTH-1:0]   data_tb_o; //We're Monitoring this Output
+logic   [0:0]              tx_valid_w;
+logic   [0:0]      rx_ready_w;
+logic   [0:0]      busy_tx_w;
+logic   [0:0]      busy_rx_w;
+
+uart_comm 
+    #()
+dut
+    (
+      .clk(clk_i),
+      .rst(rst_i),
+      .ready_i(rx_ready_w),
+      .valid_i(tx_valid_w),
+      .prescale(prescale_w),
+      .busy_rx_o(busy_rx_w),
+      .busy_tx_o(busy_tx_w),
+      .data_i(data_tb_i),
+      .data_o(data_tb_o)  
+    );
+
+// Simulation
+
+initial begin
+    clk_i = 0;
+    forever begin
+        #(ClockPeriod/2);
+        clk_i = !clk_i;
+    end
+end
+
+initial begin;
+    rst_i <= 1;
+    @(posedge clk_i);
+    rst_i <= 0;
+end
+
+task automatic run_UART(); // Will include packages l8r
+    if ((busy_rx_w | busy_tx_w)) @(negedge busy_rx_w);
+    //Set Input Data
+    tx_valid_w <= 1'b1;
+    rx_ready_w <= 1'b1;
+    data_tb_i <= $urandom_range(0, 255);
+    @(posedge clk_i);
+
+    tx_valid_w <= 1'b0;
+    rx_ready_w <= 1'b0;
+    data_tb_i <= 8'd0;
+    @(posedge clk_i);
+    if ((busy_rx_w | busy_tx_w)) @(negedge busy_rx_w);
+endtask
+
+always begin
+    $dumpfile( "dump.fst" );
+    $dumpvars;
+    $display( "Begin simulation." );
+    $urandom(100);
+    
+    // Do Something
+    repeat (NumTests) begin
+        // Delay some random time
+        int cycles = $urandom_range(10, 20);
+        for (int i = 0; i < cycles; i++) begin
+            @(posedge clk_i); #1;
+        end
+        run_UART();
+    end
+
+    $display( "End simulation." );
+    $finish;
+end
 
 endmodule
