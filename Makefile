@@ -14,7 +14,7 @@ RTL := $(shell \
 .PHONY: lint sim synth gls gls_xc7 xc7 vivado clean
 
 lint: 
-	verilator lint.vlt -f rtl/rtl.f -f dv/dv.f --lint-only --top top
+	verilator lint.vlt -f rtl/rtl.f -f dv/dv.f --lint-only --top uart_comm
 
 sim: 
 	verilator lint.vlt --Mdir ${TOP}_$@_dir -f rtl/rtl.f -f dv/dv.f --binary --top ${TOP}
