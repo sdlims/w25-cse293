@@ -1,0 +1,26 @@
+
+ /----------------------------------------------------------------------------\
+ |  yosys -- Yosys Open SYnthesis Suite                                       |
+ |  Copyright (C) 2012 - 2024  Claire Xenia Wolf <claire@yosyshq.com>         |
+ |  Distributed under an ISC-like license, type "license" to see terms        |
+ \----------------------------------------------------------------------------/
+ Yosys 0.48+57 (git sha1 ca0ace66b, g++ 13.3.0-6ubuntu2~24.04 -fPIC -O3)
+
+-- Running command `tcl synth/yosys_generic/yosys.tcl synth/build/rtl.sv2v.v' --
+[TCL: yosys -import] Command name collision: found pre-existing command `cd' -> skip.
+[TCL: yosys -import] Command name collision: found pre-existing command `eval' -> skip.
+[TCL: yosys -import] Command name collision: found pre-existing command `exec' -> skip.
+[TCL: yosys -import] Command name collision: found pre-existing command `read' -> skip.
+[TCL: yosys -import] Command name collision: found pre-existing command `trace' -> skip.
+
+1. Executing Verilog-2005 frontend: synth/build/rtl.sv2v.v
+Parsing Verilog input from `synth/build/rtl.sv2v.v' to AST representation.
+Generating RTLIL representation for module `\top'.
+Generating RTLIL representation for module `\SB_PLL40_PAD'.
+Generating RTLIL representation for module `\uart_comm'.
+Successfully finished Verilog frontend.
+
+2. Executing PREP pass.
+
+2.1. Executing HIERARCHY pass (managing design hierarchy).
+ERROR: Module `\uart_rx' referenced in module `\uart_comm' in cell `\uart_rx_inst' is not part of the design.
