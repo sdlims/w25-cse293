@@ -1,4 +1,5 @@
 dv/tb.sv
+dv/icebreak_runner.sv
 
 --timing
 -j 0
@@ -14,3 +15,5 @@ dv/tb.sv
 --x-initial unique
 
 -Werror-IMPLICIT
+-Werror-USERERROR
+-Werror-LATCH
