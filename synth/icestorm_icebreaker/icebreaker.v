@@ -28,6 +28,6 @@ SB_PLL40_PAD #(
     .PLLOUTCORE(clk_50)
 );
 
-uart_comm #() uart_comm();
+uart_comm #(.DATA_WIDTH(8)) uart_comm(.clk(clk_50), .rst(rst_i), .ready_i, .valid_i, .prescale, .data_i, .busy_tx_o(), .busy_rx_o(), .data_o());
 
 endmodule
