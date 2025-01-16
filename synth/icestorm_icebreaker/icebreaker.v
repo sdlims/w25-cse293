@@ -1,14 +1,9 @@
 module icebreaker
-#(
-    parameter DATA_WIDTH = 8
-)
 (
-    input   wire                clk_i,
-    input wire                  rst_i,
-    input wire                  ready_i,
-    input wire                  valid_i,
-    input wire [15:0]           prescale,
-    input wire [DATA_WIDTH-1:0] data_i
+    input   wire                    clk_i,
+    input   wire                    rst_i,
+    output  wire                    tx_o,
+    input   wire                    rx_i
 );
 
 wire clk_12 = clk_i;
@@ -25,9 +20,9 @@ SB_PLL40_PAD #(
     .RESETB(1'b1),
     .BYPASS(1'b0),
     .PACKAGEPIN(clk_12),
-    .PLLOUTCORE(clk_50)
+    .PLLOUTGLOBAL(clk_50)
 );
 
-uart_comm #(.DATA_WIDTH(8)) uart_comm(.clk(clk_50), .rst(rst_i), .ready_i, .valid_i, .prescale, .data_i, .busy_tx_o(), .busy_rx_o(), .data_o());
+uart_comm #(.DATA_WIDTH(8)) uart_comm(.clk(clk_50), .rst(rst_i), .rx_i(rx_i), .tx_o(tx_o));
 
 endmodule

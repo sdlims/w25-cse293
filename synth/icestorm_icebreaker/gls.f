@@ -4,3 +4,6 @@ ${YOSYS_DATDIR}/ice40/cells_sim.v
 
 synth/icestorm_icebreaker/build/synth.v
 synth/icestorm_icebreaker/icebreak_runner.sv
+
+third_party/alexforencich_uart/rtl/uart_rx.v
+third_party/alexforencich_uart/rtl/uart_tx.v
