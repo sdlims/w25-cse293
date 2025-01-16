@@ -5,7 +5,7 @@ Questions:
 `timescale 1ns/1ps
 module tb;
 
-localparam NumTests = 3;
+localparam NumTests = 9;
 
 icebreak_runner ib_runner ();
 
