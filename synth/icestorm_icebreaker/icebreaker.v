@@ -1,3 +1,7 @@
+// nextpnr-ice40 --json synth/icestorm_icebreaker/build/synth.json --pcf synth/icestorm_icebreaker/icebreaker.pcf --asc synth/icestorm_icebreaker/build/synth.asc --package sg48 --up5k
+// sudo openFPGALoader -b ice40_generic -f synth/icestorm_icebreaker/build/icebreaker.bit
+
+
 module icebreaker
 (
     input   wire                    clk_i,
@@ -7,22 +11,22 @@ module icebreaker
 );
 
 wire clk_12 = clk_i;
-wire clk_50;
+wire clk_32_256;
 
 SB_PLL40_PAD #(
     .FEEDBACK_PATH("SIMPLE"),
     .DIVR(4'd0),
-    .DIVF(7'd66),
-    .DIVQ(3'd4),
+    .DIVF(7'd85),
+    .DIVQ(3'd5),
     .FILTER_RANGE(3'd1)
 ) pll (
     .LOCK(),
     .RESETB(1'b1),
     .BYPASS(1'b0),
     .PACKAGEPIN(clk_12),
-    .PLLOUTGLOBAL(clk_50)
+    .PLLOUTGLOBAL(clk_32_256)
 );
 
-uart_comm #(.DATA_WIDTH(8)) uart_comm(.clk(clk_50), .rst(rst_i), .rx_i(rx_i), .tx_o(tx_o));
+uart_comm #(.DATA_WIDTH(8)) uart_comm(.clk(clk_32_256), .rst(!rst_i), .tx_valid(1'b1), .rx_ready(1'b1), .rx_i(rx_i), .tx_o(tx_o));
 
 endmodule

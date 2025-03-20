@@ -1,6 +1,7 @@
 module icebreak_runner;
 
 localparam ClockPeriod = 21.0526316ns;
+localparam prescale_lp = 35;
 
 // Variable Declaration
 
@@ -13,15 +14,17 @@ logic tb_tx, tb_rx;
 
 logic [7:0] data_tb_i, data_tb_o;
 
-logic busy;
+logic busy_tx, busy_rx;
+
+logic tx_ready_o, rx_valid_o;
 
 uart_tx uart_tx(.clk(clk_i), .rst(rst_i), .s_axis_tdata(data_tb_i), .s_axis_tvalid(tx_valid),
-.s_axis_tready(), .txd(tb_tx), .busy(busy), .prescale(1));
+.s_axis_tready(tx_ready_o), .txd(tb_tx), .busy(busy_tx), .prescale(prescale_lp));
 
 
-uart_rx uart_rx(.clk(clk_i), .rst(rst_i), .m_axis_tdata(data_tb_o), .m_axis_tvalid(), 
-.m_axis_tready(rx_ready), .rxd(tb_rx), .busy(), .overrun_error(), .frame_error(), 
-.prescale(1));
+uart_rx uart_rx(.clk(clk_i), .rst(rst_i), .m_axis_tdata(data_tb_o), .m_axis_tvalid(rx_valid_o), 
+.m_axis_tready(rx_ready), .rxd(tb_rx), .busy(busy_rx), .overrun_error(), .frame_error(), 
+.prescale(prescale_lp));
 
 uart_comm 
     #()
@@ -29,6 +32,8 @@ dut
     (
       .clk(clk_i),
       .rst(rst_i),
+      .tx_valid(tx_valid),
+      .rx_ready(rx_ready),
       .rx_i(tb_tx),
       .tx_o(tb_rx)
     );
@@ -50,29 +55,73 @@ initial begin;
     rst_i <= 0;
 end
 
-task automatic run_single_UART(); // Will include packages l8r
-    //Set Input Data
-    while (busy) @(negedge busy);
-    tx_valid <= 1'b1;
-    rx_ready <= 1'b1;
-    data_tb_i <= 8'd1;
-    @(posedge clk_i);
-    tx_valid <= 1'b0;
-    rx_ready <= 1'b0;
-    data_tb_i <= 8'd0;
-    @(posedge clk_i);
-endtask
+// task automatic run_single_UART(); // Will include packages l8r
+//     //Set Input Data
+//     while (busy) @(negedge busy);
+//     tx_valid <= 1'b1;
+//     rx_ready <= 1'b1;
+//     data_tb_i <= 8'd1;
+//     @(posedge clk_i);
+//     tx_valid <= 1'b0;
+//     rx_ready <= 1'b0;
+//     data_tb_i <= 8'd0;
+//     @(posedge clk_i);
+// endtask
 
 task automatic run_UART(); // Will include packages l8r
-    while (busy) @(negedge busy);
     tx_valid <= 1'b1;
     rx_ready <= 1'b1;
-    data_tb_i <= $urandom_range(0, 255); 
+    data_tb_i <= {8'hDE}; // EC, AD, FF, DE 
+    @(posedge clk_i);
     @(posedge clk_i);
     tx_valid <= 1'b0;
     rx_ready <= 1'b0;
-    data_tb_i <= 8'd0;
+    while (busy_tx) @(negedge clk_i);
+
+    tx_valid <= 1'b1;
+    rx_ready <= 1'b1;
+    data_tb_i <= 8'h00;
     @(posedge clk_i);
+    @(posedge clk_i);
+    tx_valid <= 1'b0;
+    rx_ready <= 1'b0;
+    while (busy_tx) @(negedge clk_i);
+
+    tx_valid <= 1'b1;
+    rx_ready <= 1'b1;
+    data_tb_i <= 8'h06;
+    @(posedge clk_i);
+    @(posedge clk_i);
+    tx_valid <= 1'b0;
+    rx_ready <= 1'b0;
+    while (busy_tx) @(negedge clk_i);
+
+    tx_valid <= 1'b1;
+    rx_ready <= 1'b1;
+    data_tb_i <= 8'h00;
+    @(posedge clk_i);
+    @(posedge clk_i);
+    tx_valid <= 1'b0;
+    rx_ready <= 1'b0;
+    while (busy_tx) @(negedge clk_i);
+
+    tx_valid <= 1'b1;
+    rx_ready <= 1'b1;
+    data_tb_i <= 8'h02;
+    @(posedge clk_i);
+    @(posedge clk_i);
+    tx_valid <= 1'b0;
+    rx_ready <= 1'b0;
+    while (busy_tx) @(negedge clk_i);
+
+    tx_valid <= 1'b1;
+    rx_ready <= 1'b1;
+    data_tb_i <= 8'h01;
+    @(posedge clk_i);
+    @(posedge clk_i);
+    tx_valid <= 1'b0;
+    rx_ready <= 1'b0;
+    while (busy_tx) @(negedge clk_i);
 endtask
 
 task automatic delay();

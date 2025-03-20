@@ -8,16 +8,9 @@
 # guide
 
 ## Board Clock: 12 MHz
-set_frequency  clk_12mhz_i             12
-set_io -nowarn clk_12mhz_i             35
+set_io -nowarn clk_i                  35
 
+set_io -nowarn rst_i                  10
 
-# PMOD 1B
-set_io -nowarn tx_main_clk_o           43 
-set_io -nowarn tx_lr_clk_o             38
-set_io -nowarn tx_data_clk_o           34
-set_io -nowarn tx_data_o               31
-set_io -nowarn rx_main_clk_o           42
-set_io -nowarn rx_lr_clk_o             36
-set_io -nowarn rx_data_clk_o           32
-set_io -nowarn rx_data_i               28
+set_io -nowarn tx_o                    9
+set_io -nowarn rx_i                    6
