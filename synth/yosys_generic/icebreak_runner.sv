@@ -1,21 +1,27 @@
 module icebreak_runner;
 
-localparam DATA_WIDTH = 8;
 localparam ClockPeriod = 21.0526316ns;
 
 // Variable Declaration
 
 logic                   clk_i;
 logic                   rst_i = 1;
-wire [15:0]             prescale_w = 1; // Change this
 
 
-logic   [DATA_WIDTH-1:0]   data_tb_i; 
-logic   [DATA_WIDTH-1:0]   data_tb_o; //We're Monitoring this Output
-logic   [0:0]              tx_valid_w;
-logic   [0:0]      rx_ready_w;
-logic   [0:0]      busy_tx_w;
-logic   [0:0]      busy_rx_w;
+logic tx_valid, rx_ready;
+logic tb_tx, tb_rx;
+
+logic [7:0] data_tb_i, data_tb_o;
+
+logic busy;
+
+uart_tx uart_tx(.clk(clk_i), .rst(rst_i), .s_axis_tdata(data_tb_i), .s_axis_tvalid(tx_valid),
+.s_axis_tready(), .txd(tb_tx), .busy(busy), .prescale(1));
+
+
+uart_rx uart_rx(.clk(clk_i), .rst(rst_i), .m_axis_tdata(data_tb_o), .m_axis_tvalid(), 
+.m_axis_tready(rx_ready), .rxd(tb_rx), .busy(), .overrun_error(), .frame_error(), 
+.prescale(1));
 
 uart_comm 
     #()
@@ -23,13 +29,8 @@ dut
     (
       .clk(clk_i),
       .rst(rst_i),
-      .ready_i(rx_ready_w),
-      .valid_i(tx_valid_w),
-      .prescale(prescale_w),
-      .busy_rx_o(busy_rx_w),
-      .busy_tx_o(busy_tx_w),
-      .data_i(data_tb_i),
-      .data_o(data_tb_o)  
+      .rx_i(tb_tx),
+      .tx_o(tb_rx)
     );
 
 // Simulation
@@ -45,37 +46,33 @@ end
 initial begin;
     rst_i <= 1;
     @(posedge clk_i);
+    @(posedge clk_i);
     rst_i <= 0;
 end
 
 task automatic run_single_UART(); // Will include packages l8r
-    if ((busy_rx_w | busy_tx_w)) @(negedge busy_rx_w);
     //Set Input Data
-    tx_valid_w <= 1'b1;
-    rx_ready_w <= 1'b1;
-    data_tb_i <= 8'd1; //
+    while (busy) @(negedge busy);
+    tx_valid <= 1'b1;
+    rx_ready <= 1'b1;
+    data_tb_i <= 8'd1;
     @(posedge clk_i);
-
-    tx_valid_w <= 1'b0;
-    rx_ready_w <= 1'b0;
+    tx_valid <= 1'b0;
+    rx_ready <= 1'b0;
     data_tb_i <= 8'd0;
     @(posedge clk_i);
-    if ((busy_rx_w | busy_tx_w)) @(negedge busy_rx_w);
 endtask
 
 task automatic run_UART(); // Will include packages l8r
-    if ((busy_rx_w | busy_tx_w)) @(negedge busy_rx_w);
-    //Set Input Data
-    tx_valid_w <= 1'b1;
-    rx_ready_w <= 1'b1;
+    while (busy) @(negedge busy);
+    tx_valid <= 1'b1;
+    rx_ready <= 1'b1;
     data_tb_i <= $urandom_range(0, 255); 
     @(posedge clk_i);
-
-    tx_valid_w <= 1'b0;
-    rx_ready_w <= 1'b0;
+    tx_valid <= 1'b0;
+    rx_ready <= 1'b0;
     data_tb_i <= 8'd0;
     @(posedge clk_i);
-    if ((busy_rx_w | busy_tx_w)) @(negedge busy_rx_w);
 endtask
 
 task automatic delay();
