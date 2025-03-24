@@ -1,6 +1,7 @@
 module icebreak_runner;
 
 localparam ClockPeriod = 21.0526316ns;
+localparam prescale_lp = 35;
 
 // Variable Declaration
 
@@ -8,22 +9,38 @@ logic                   clk_i;
 logic                   rst_i = 1;
 
 
-logic tx_valid, rx_ready;
+logic tb_tx_valid, tb_rx_ready;
 logic tb_tx, tb_rx;
 
-logic [7:0] data_tb_i, data_tb_o;
+logic [7:0] tb_tx_data, tb_rx_data;
 
-logic busy;
+logic tb_tx_ready, tb_rx_valid;
 
-uart_tx uart_tx(.clk(clk_i), .rst(rst_i), .s_axis_tdata(data_tb_i), .s_axis_tvalid(tx_valid),
-.s_axis_tready(), .txd(tb_tx), .busy(busy), .prescale(1));
+uart_tx uart_tx(
+    .clk(clk_i),
+    .rst(rst_i),
+    .s_axis_tdata(tb_tx_data),
+    .s_axis_tvalid(tb_tx_valid),
+    .s_axis_tready(tb_tx_ready),
+    .txd(tb_tx),
+    .busy(),
+    .prescale(prescale_lp)
+);
 
+uart_rx uart_rx(
+    .clk(clk_i),
+    .rst(rst_i),
+    .m_axis_tdata(tb_rx_data),
+    .m_axis_tvalid(tb_rx_valid),
+    .m_axis_tready(tb_rx_ready),
+    .rxd(tb_rx),
+    .busy(),
+    .overrun_error(),
+    .frame_error(),
+    .prescale(prescale_lp)
+);
 
-uart_rx uart_rx(.clk(clk_i), .rst(rst_i), .m_axis_tdata(data_tb_o), .m_axis_tvalid(), 
-.m_axis_tready(rx_ready), .rxd(tb_rx), .busy(), .overrun_error(), .frame_error(), 
-.prescale(1));
-
-uart_comm 
+uart_comm
     #()
 dut
     (
@@ -43,36 +60,21 @@ initial begin
     end
 end
 
-initial begin;
+task automatic reset;
     rst_i <= 1;
     @(posedge clk_i);
     @(posedge clk_i);
     rst_i <= 0;
-end
-
-task automatic run_single_UART(); // Will include packages l8r
-    //Set Input Data
-    while (busy) @(negedge busy);
-    tx_valid <= 1'b1;
-    rx_ready <= 1'b1;
-    data_tb_i <= 8'd1;
-    @(posedge clk_i);
-    tx_valid <= 1'b0;
-    rx_ready <= 1'b0;
-    data_tb_i <= 8'd0;
-    @(posedge clk_i);
 endtask
 
-task automatic run_UART(); // Will include packages l8r
-    while (busy) @(negedge busy);
-    tx_valid <= 1'b1;
-    rx_ready <= 1'b1;
-    data_tb_i <= $urandom_range(0, 255); 
-    @(posedge clk_i);
-    tx_valid <= 1'b0;
-    rx_ready <= 1'b0;
-    data_tb_i <= 8'd0;
-    @(posedge clk_i);
+task automatic send_byte(logic [7:0] d);
+    tb_tx_valid <= 1'b1;
+    tb_rx_ready <= 1'b1;
+    tb_tx_data <= d;
+    while (!tb_tx_ready) @(posedge clk_i);
+    @(posedge clk_i); #1ps;
+    tb_tx_valid <= 1'b0;
+    tb_rx_ready <= 1'b0;
 endtask
 
 task automatic delay();

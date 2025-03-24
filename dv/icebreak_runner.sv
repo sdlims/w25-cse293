@@ -9,31 +9,43 @@ logic                   clk_i;
 logic                   rst_i = 1;
 
 
-logic tx_valid, rx_ready;
+logic tb_tx_valid, tb_rx_ready;
 logic tb_tx, tb_rx;
 
-logic [7:0] data_tb_i, data_tb_o;
+logic [7:0] tb_tx_data, tb_rx_data;
 
-logic busy_tx, busy_rx;
+logic tb_tx_ready, tb_rx_valid;
 
-logic tx_ready_o, rx_valid_o;
+uart_tx uart_tx(
+    .clk(clk_i),
+    .rst(rst_i),
+    .s_axis_tdata(tb_tx_data),
+    .s_axis_tvalid(tb_tx_valid),
+    .s_axis_tready(tb_tx_ready),
+    .txd(tb_tx),
+    .busy(),
+    .prescale(prescale_lp)
+);
 
-uart_tx uart_tx(.clk(clk_i), .rst(rst_i), .s_axis_tdata(data_tb_i), .s_axis_tvalid(tx_valid),
-.s_axis_tready(tx_ready_o), .txd(tb_tx), .busy(busy_tx), .prescale(prescale_lp));
+uart_rx uart_rx(
+    .clk(clk_i),
+    .rst(rst_i),
+    .m_axis_tdata(tb_rx_data),
+    .m_axis_tvalid(tb_rx_valid),
+    .m_axis_tready(tb_rx_ready),
+    .rxd(tb_rx),
+    .busy(),
+    .overrun_error(),
+    .frame_error(),
+    .prescale(prescale_lp)
+);
 
-
-uart_rx uart_rx(.clk(clk_i), .rst(rst_i), .m_axis_tdata(data_tb_o), .m_axis_tvalid(rx_valid_o), 
-.m_axis_tready(rx_ready), .rxd(tb_rx), .busy(busy_rx), .overrun_error(), .frame_error(), 
-.prescale(prescale_lp));
-
-uart_comm 
-    #()
+uart_comm
+    #(.prescale_lp)
 dut
     (
       .clk(clk_i),
       .rst(rst_i),
-      .tx_valid(tx_valid),
-      .rx_ready(rx_ready),
       .rx_i(tb_tx),
       .tx_o(tb_rx)
     );
@@ -48,80 +60,21 @@ initial begin
     end
 end
 
-initial begin;
+task automatic reset;
     rst_i <= 1;
     @(posedge clk_i);
     @(posedge clk_i);
     rst_i <= 0;
-end
+endtask
 
-// task automatic run_single_UART(); // Will include packages l8r
-//     //Set Input Data
-//     while (busy) @(negedge busy);
-//     tx_valid <= 1'b1;
-//     rx_ready <= 1'b1;
-//     data_tb_i <= 8'd1;
-//     @(posedge clk_i);
-//     tx_valid <= 1'b0;
-//     rx_ready <= 1'b0;
-//     data_tb_i <= 8'd0;
-//     @(posedge clk_i);
-// endtask
-
-task automatic run_UART(); // Will include packages l8r
-    tx_valid <= 1'b1;
-    rx_ready <= 1'b1;
-    data_tb_i <= {8'hDE}; // EC, AD, FF, DE 
-    @(posedge clk_i);
-    @(posedge clk_i);
-    tx_valid <= 1'b0;
-    rx_ready <= 1'b0;
-    while (busy_tx) @(negedge clk_i);
-
-    tx_valid <= 1'b1;
-    rx_ready <= 1'b1;
-    data_tb_i <= 8'h00;
-    @(posedge clk_i);
-    @(posedge clk_i);
-    tx_valid <= 1'b0;
-    rx_ready <= 1'b0;
-    while (busy_tx) @(negedge clk_i);
-
-    tx_valid <= 1'b1;
-    rx_ready <= 1'b1;
-    data_tb_i <= 8'h06;
-    @(posedge clk_i);
-    @(posedge clk_i);
-    tx_valid <= 1'b0;
-    rx_ready <= 1'b0;
-    while (busy_tx) @(negedge clk_i);
-
-    tx_valid <= 1'b1;
-    rx_ready <= 1'b1;
-    data_tb_i <= 8'h00;
-    @(posedge clk_i);
-    @(posedge clk_i);
-    tx_valid <= 1'b0;
-    rx_ready <= 1'b0;
-    while (busy_tx) @(negedge clk_i);
-
-    tx_valid <= 1'b1;
-    rx_ready <= 1'b1;
-    data_tb_i <= 8'h02;
-    @(posedge clk_i);
-    @(posedge clk_i);
-    tx_valid <= 1'b0;
-    rx_ready <= 1'b0;
-    while (busy_tx) @(negedge clk_i);
-
-    tx_valid <= 1'b1;
-    rx_ready <= 1'b1;
-    data_tb_i <= 8'h01;
-    @(posedge clk_i);
-    @(posedge clk_i);
-    tx_valid <= 1'b0;
-    rx_ready <= 1'b0;
-    while (busy_tx) @(negedge clk_i);
+task automatic send_byte(logic [7:0] d);
+    tb_tx_valid <= 1'b1;
+    tb_rx_ready <= 1'b1;
+    tb_tx_data <= d;
+    while (!tb_tx_ready) @(posedge clk_i);
+    @(posedge clk_i); #1ps;
+    tb_tx_valid <= 1'b0;
+    tb_rx_ready <= 1'b0;
 endtask
 
 task automatic delay();

@@ -14,16 +14,21 @@ always begin
     $dumpvars;
     $display( "Begin simulation." );
     $urandom(100);
-    
+
     // Do Something
-    // ib_runner.delay();
-    // ib_runner.run_single_UART();
+    ib_runner.reset();
     repeat (NumTests) begin
-        // Delay some random time
         ib_runner.delay();
-        ib_runner.run_UART();
+        ib_runner.send_byte(8'hEC); // echo
+        ib_runner.send_byte(8'h00); // reserved
+        ib_runner.send_byte(8'h07); // length LSB
+        ib_runner.send_byte(8'h00); // length MSB
+        // data to echo
+        ib_runner.send_byte(8'h51);
+        ib_runner.send_byte(8'h50);
+        ib_runner.send_byte(8'h49);
     end
-    #100000;
+    #1ms;
 
     $display( "End simulation." );
     $finish;
