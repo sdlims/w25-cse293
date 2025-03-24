@@ -64,6 +64,9 @@ synth/icestorm_icebreaker/build/icebreaker.asc: synth/icestorm_icebreaker/build/
 %.bit: %.asc
 	icepack $< $@
 
+icestorm_icebreaker_program: synth/icestorm_icebreaker/build/icebreaker.bit
+	sudo $(shell which openFPGALoader) -b ice40_generic $<
+
 clean:
 	rm -rf \
 	 *.memh *.memb \

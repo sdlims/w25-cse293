@@ -7,12 +7,27 @@ module icebreaker
     input   wire                    clk_i,
     input   wire                    rst_ni,
     output  wire                    tx_o,
-    input   wire                    rx_i
+    input   wire                    rx_i,
+
+    output  wire                    LEDR_N,
+    output  wire                    LEDG_N
 );
 
 wire clk_12 = clk_i;
 wire clk_32_256;
 
+// For debugging
+always @(posedge clk_32_256) begin
+    if (!rst_ni) begin
+        LEDR_N <= 1;
+        LEDG_N <= 1;
+    end else begin
+        if (rx_i==0) LEDR_N <= 0;
+        if (tx_o==0) LEDG_N <= 0;
+    end
+end
+
+// icepll -i 12 -o 32.256
 SB_PLL40_PAD #(
     .FEEDBACK_PATH("SIMPLE"),
     .DIVR(4'd0),

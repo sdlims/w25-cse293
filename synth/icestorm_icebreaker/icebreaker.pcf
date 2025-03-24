@@ -1,5 +1,5 @@
 # Icebreaker Physical Constraints File (.pcf)
-# 
+#
 # This file assigns inputs/outputs to physical pins numbers on the icebreaker board.
 #
 # This particular PCF is derived from:
@@ -10,7 +10,9 @@
 ## Board Clock: 12 MHz
 set_io -nowarn clk_i                  35
 
-set_io -nowarn rst_i                  10
+set_io -nowarn rst_ni                 10
+set_io -nowarn LEDR_N                 11
+set_io -nowarn LEDG_N                 37
 
 set_io -nowarn tx_o                    9
 set_io -nowarn rx_i                    6
