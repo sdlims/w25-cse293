@@ -19,14 +19,18 @@ always begin
     repeat (NumTests) begin
         // Delay some random time
         ib_runner.delay();
-        ib_runner.run_UART(8'hEC); // echo
+        ib_runner.run_UART(8'hDE); // echo EC div DE
         ib_runner.run_UART(8'h00); // reserved
-        ib_runner.run_UART(8'h07); // length LSB
+        // ib_runner.run_UART(8'h07); // length LSB ECHO
+        ib_runner.run_UART(8'h06); // length LSB DIV
         ib_runner.run_UART(8'h00); // length MSB
         // data to echo
-        ib_runner.run_UART(8'h51);
-        ib_runner.run_UART(8'h50);
-        ib_runner.run_UART(8'h49);
+        // ib_runner.run_UART(8'h51);
+        // ib_runner.run_UART(8'h50);
+        // ib_runner.run_UART(8'h49);
+        // data to div
+        ib_runner.run_UART(8'd50);
+        ib_runner.run_UART(8'd2);
     end
     #1ms;
 

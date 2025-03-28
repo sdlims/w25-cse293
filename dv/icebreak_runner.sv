@@ -32,8 +32,6 @@ dut
     (
       .clk(clk_i),
       .rst(rst_i),
-      .tx_valid(tx_valid),
-      .rx_ready(rx_ready),
       .rx_i(tb_tx),
       .tx_o(tb_rx)
     );
