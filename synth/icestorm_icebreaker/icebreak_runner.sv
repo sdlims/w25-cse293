@@ -58,75 +58,15 @@ end
 icebreaker icebreaker (.clk_i, .rst_i(rst_i), .rx_i(tb_tx), .tx_o(tb_rx));
 
 assign icebreaker.pll.PLLOUTGLOBAL = pll_out;
-// assign icebreaker.clk_32_256 = pll_out;
 
-task automatic run_single_UART(); // Will include packages l8r
-    //Set Input Data
-    if (busy_tx | busy_rx) @(negedge busy_rx);
+task automatic run_UART(logic [7:0] task_data); // Will include packages l8r
     tx_valid <= 1'b1;
     rx_ready <= 1'b1;
-    data_tb_i <= 8'd1;
-    @(posedge pll_out);
-    @(posedge pll_out);
+    data_tb_i <= task_data;
+    while(!tx_ready_o) @(posedge clk_i);
+    @(posedge clk_i); #1ps;
     tx_valid <= 1'b0;
     rx_ready <= 1'b0;
-    data_tb_i <= 8'd0;
-endtask
-
-task automatic run_UART(); // Will include packages l8r
-    tx_valid <= 1'b1;
-    rx_ready <= 1'b1;
-    data_tb_i <= {8'hEC}; // EC, AD, FF, DE 
-    @(posedge pll_out);
-    @(posedge pll_out);
-    tx_valid <= 1'b0;
-    rx_ready <= 1'b0;
-    while (busy_tx) @(negedge pll_out);
-
-    tx_valid <= 1'b1;
-    rx_ready <= 1'b1;
-    data_tb_i <= 8'h00;
-    @(posedge pll_out);
-    @(posedge pll_out);
-    tx_valid <= 1'b0;
-    rx_ready <= 1'b0;
-    while (busy_tx) @(negedge pll_out);
-
-    tx_valid <= 1'b1;
-    rx_ready <= 1'b1;
-    data_tb_i <= 8'h06;
-    @(posedge pll_out);
-    @(posedge pll_out);
-    tx_valid <= 1'b0;
-    rx_ready <= 1'b0;
-    while (busy_tx) @(negedge pll_out);
-
-    tx_valid <= 1'b1;
-    rx_ready <= 1'b1;
-    data_tb_i <= 8'h00;
-    @(posedge pll_out);
-    @(posedge pll_out);
-    tx_valid <= 1'b0;
-    rx_ready <= 1'b0;
-    while (busy_tx) @(negedge pll_out);
-
-    tx_valid <= 1'b1;
-    rx_ready <= 1'b1;
-    data_tb_i <= 8'h02;
-    @(posedge pll_out);
-    @(posedge pll_out);
-    tx_valid <= 1'b0;
-    rx_ready <= 1'b0;
-    while (busy_tx) @(negedge pll_out);
-
-    tx_valid <= 1'b1;
-    rx_ready <= 1'b1;
-    data_tb_i <= 8'h01;
-    @(posedge pll_out);
-    @(posedge pll_out);
-    tx_valid <= 1'b0;
-    rx_ready <= 1'b0;
-    while (busy_tx) @(negedge pll_out);
 endtask
 
 task automatic delay();
