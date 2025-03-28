@@ -68,60 +68,14 @@ end
 //     @(posedge clk_i);
 // endtask
 
-task automatic run_UART(); // Will include packages l8r
+task automatic run_UART(logic [7:0] task_data); // Will include packages l8r
     tx_valid <= 1'b1;
     rx_ready <= 1'b1;
-    data_tb_i <= {8'hDE}; // EC, AD, FF, DE 
-    @(posedge clk_i);
-    @(posedge clk_i);
+    data_tb_i <= task_data;
+    while(!tx_ready_o) @(posedge clk_i);
+    @(posedge clk_i); #1ps;
     tx_valid <= 1'b0;
     rx_ready <= 1'b0;
-    while (busy_tx) @(negedge clk_i);
-
-    tx_valid <= 1'b1;
-    rx_ready <= 1'b1;
-    data_tb_i <= 8'h00;
-    @(posedge clk_i);
-    @(posedge clk_i);
-    tx_valid <= 1'b0;
-    rx_ready <= 1'b0;
-    while (busy_tx) @(negedge clk_i);
-
-    tx_valid <= 1'b1;
-    rx_ready <= 1'b1;
-    data_tb_i <= 8'h06;
-    @(posedge clk_i);
-    @(posedge clk_i);
-    tx_valid <= 1'b0;
-    rx_ready <= 1'b0;
-    while (busy_tx) @(negedge clk_i);
-
-    tx_valid <= 1'b1;
-    rx_ready <= 1'b1;
-    data_tb_i <= 8'h00;
-    @(posedge clk_i);
-    @(posedge clk_i);
-    tx_valid <= 1'b0;
-    rx_ready <= 1'b0;
-    while (busy_tx) @(negedge clk_i);
-
-    tx_valid <= 1'b1;
-    rx_ready <= 1'b1;
-    data_tb_i <= 8'h02;
-    @(posedge clk_i);
-    @(posedge clk_i);
-    tx_valid <= 1'b0;
-    rx_ready <= 1'b0;
-    while (busy_tx) @(negedge clk_i);
-
-    tx_valid <= 1'b1;
-    rx_ready <= 1'b1;
-    data_tb_i <= 8'h01;
-    @(posedge clk_i);
-    @(posedge clk_i);
-    tx_valid <= 1'b0;
-    rx_ready <= 1'b0;
-    while (busy_tx) @(negedge clk_i);
 endtask
 
 task automatic delay();
