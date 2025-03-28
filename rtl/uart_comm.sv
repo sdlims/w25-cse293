@@ -8,9 +8,6 @@ module uart_comm
     input   wire                        clk,
     input   wire                        rst,
 
-    input   wire                        tx_valid,
-    input   wire                        rx_ready,
-
     input   wire                        rx_i,
     output  wire                        tx_o
 );
@@ -35,7 +32,7 @@ logic [15:0] frame_cnt_d, frame_cnt_q;
 logic [31:0] operand_1_d, operand_1_q;
 logic [31:0] operand_2_d, operand_2_q;
 
-always_ff @( posedge clk ) begin : state
+always_ff @( posedge clk ) begin : ps_ns
     if (rst) begin
         state_q <= 4'd0;
         frame_cnt_q <= 16'd0;
