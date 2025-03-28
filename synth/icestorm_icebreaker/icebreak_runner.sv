@@ -63,8 +63,8 @@ task automatic run_UART(logic [7:0] task_data); // Will include packages l8r
     tx_valid <= 1'b1;
     rx_ready <= 1'b1;
     data_tb_i <= task_data;
-    while(!tx_ready_o) @(posedge clk_i);
-    @(posedge clk_i); #1ps;
+    while(!tx_ready_o) @(posedge pll_out);
+    @(posedge pll_out); #1ps;
     tx_valid <= 1'b0;
     rx_ready <= 1'b0;
 endtask
