@@ -1,4 +1,4 @@
-// nextpnr-ice40 --json synth/icestorm_icebreaker/build/synth.json --pcf synth/icestorm_icebreaker/icebreaker.pcf --asc synth/icestorm_icebreaker/build/synth.asc --package sg48 --up5k
+// nextpnr-ice40 --json synth/icestorm_icebreaker/build/synth.json --pcf synth/icestorm_icebreaker/icebreaker.pcf --asc synth/build/synth.asc --package sg48 --up5k
 // sudo openFPGALoader -b ice40_generic -f synth/icestorm_icebreaker/build/synth.bit
 
 
