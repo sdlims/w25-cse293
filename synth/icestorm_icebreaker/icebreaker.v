@@ -27,6 +27,6 @@ SB_PLL40_PAD #(
     .PLLOUTGLOBAL(clk_32_256)
 );
 
-uart_comm #(.DATA_WIDTH(8)) uart_comm(.clk(clk_32_256), .rst(!rst_i), .tx_valid(1'b1), .rx_ready(1'b1), .rx_i(rx_i), .tx_o(tx_o));
+uart_comm #(.DATA_WIDTH(8)) uart_comm(.clk(clk_32_256), .rst(!rst_i), .rx_i(rx_i), .tx_o(tx_o));
 
 endmodule
