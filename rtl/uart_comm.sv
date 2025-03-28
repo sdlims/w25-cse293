@@ -183,79 +183,19 @@ always_comb begin : state_machine
                     tx_tvalid = 1'b1;
                     tx_data = div_o[7:0];
                     if (frame_cnt_d >= length_q) begin
-                        state_d = 4'd0;
-                        frame_cnt_d = '0;
+                        state_d = 4'd8;
                     end else begin
                         state_d = 4'd7;
-                        frame_cnt_d = frame_cnt_q + 1;
                     end
                 end
             end
         end
 
-        // 4'd5: begin // DELAY
-        //     rx_tready = 1'b1;
-        //     if (rx_tvalid) begin
-        //         frame_cnt_d = frame_cnt_q;
-        //         state_d = 4'd6;
-        //     end else begin
-        //         frame_cnt_d = frame_cnt_q;
-        //         state_d = 4'd5;
-        //     end
-        // end
-
-        // 4'd6: begin // OP_1
-        //     rx_tready = 1'b1;
-        //     idiv = 1'b0;
-        //     if (rx_tvalid) begin
-        //         idiv = 1'b0;
-        //         frame_cnt_d = frame_cnt_q + 1;
-        //         operand_1_d = rx_data;
-        //         operand_2_d = 32'd1;
-        //         state_d = 4'd7;
-        //     end else begin
-        //         frame_cnt_d = frame_cnt_q;
-        //         operand_1_d = operand_1_q;
-        //         operand_2_d = operand_1_q;
-        //         state_d = 4'd6;
-        //     end
-        // end
-
-        // 4'd7: begin // OP_2
-        //     rx_tready = 1'b1;
-        //     idiv = 1'b0;
-        //     if (rx_tvalid) begin
-        //         frame_cnt_d = frame_cnt_q + 1;
-        //         operand_2_d = rx_data;
-        //         state_d = 4'd8;
-        //     end else begin
-        //         frame_cnt_d = frame_cnt_q;
-        //         operand_2_d = operand_2_q;
-        //         state_d = 4'd7;
-        //     end
-        // end
-
-        // 4'd8: begin
-        //     if (cnt_q != 1'b1) begin
-        //         cnt_d = cnt_q + 1;
-        //     end else begin
-        //         cnt_d = cnt_q;
-        //         idiv = 1'b1;
-        //         rx_tready = tx_tready;
-        //         if (tx_tready && div_valid) begin
-        //             frame_cnt_d = frame_cnt_q + 1;
-        //             tx_tvalid = 1'b1;
-        //             tx_data = div_o[7:0];
-        //             if (frame_cnt_d >= length_q) begin
-        //                 state_d = 4'd0;
-        //                 frame_cnt_d = '0;
-        //             end else begin
-        //                 state_d = 4'd8;
-        //                 frame_cnt_d = frame_cnt_q + 1;
-        //             end
-        //         end
-        //     end
-        // end
+        4'd8: begin
+            idiv = 1'b0;
+            state_d = 4'd8;
+            frame_cnt_d = '0;
+        end
     endcase
 end
 
