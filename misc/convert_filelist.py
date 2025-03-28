@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-#Ethan's convert_filelist.py
 
 import sys
 import re
@@ -7,13 +6,12 @@ import os
 
 def process_verilog_file_list(target, file_list):
     # Check input
-    if target not in ['Makefile', 'Synlig']:
+    if target not in ['Makefile', 'sv2v']:
         print(f'Unknown target {target}')
         return ''
 
     # List of allowed file extensions
-    synlig_allowed_extensions = ['.sv', '.v', '.svh', '.vh']
-    makefile_allowed_extensions = ['.sv', '.v', '.svh', '.vh', 'vlt']
+    rtl_extensions = ['.sv', '.v', '.svh', '.vh']
 
     # Read the Verilog file list
     with open(file_list, 'r') as f:
@@ -28,26 +26,22 @@ def process_verilog_file_list(target, file_list):
         # Replace "+incdir+" with "-I"
         line = line.replace('+incdir+', '-I')
 
-        # Replace -pvalue+<name>=<value> and -G<name>=<value> with -P<name>=<value>
-        line = re.sub(r'-pvalue\+(\w+)=(\S+)', r'-P\1=\2', line)
-        line = re.sub(r'-G(\w+)=(\S+)', r'-P\1=\2', line)
-
         # Remove extra whitespace
         line = ' '.join(line.split())
 
         # Substitute environment variables
         line = os.path.expandvars(line)
 
-        # Check if the line ends with an allowed extension or is -I or -P
+        # Check if the line ends with an allowed extension or is -I
         if target=='Makefile':
-            if any(line.endswith(ext) for ext in makefile_allowed_extensions):
+            if any(line.endswith(ext) for ext in rtl_extensions):
                 processed_lines.append(line)
-        elif target=='Synlig':
-            if any(line.endswith(ext) for ext in synlig_allowed_extensions) or '-I' in line or '-P' in line:
+        elif target=='sv2v':
+            if any(line.endswith(ext) for ext in rtl_extensions) or line.startswith('-I'):
                 processed_lines.append(line)
 
-    # Reorder lines: -I/-P first, then others
-    processed_lines.sort(key=lambda x: '-I' in x or '-P' in x, reverse=True)
+    # Reorder lines: -I first, then others
+    processed_lines.sort(key=lambda x: '-I' in x or '+incdir+' in x, reverse=True)
 
     # Print the processed content
     print(' '.join(processed_lines))
