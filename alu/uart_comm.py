@@ -1,97 +1,53 @@
 import serial
 import struct
 
-# FPGA UART settings
-PORT = "/dev/ttyUSB1"
-BAUDRATE = 115200
-ECHO_OPCODE = 0xEC
-ADD_OPCODE  = 0xAD  
-MUL_OPCODE  = 0xFF
-DIV_OPCODE  = 0xDE
+SERIAL_PORT = "/dev/ttyUSB1"
+BAUD_RATE = 115200
 
+def construct_packet(opcode, num1=None, num2=None, echo_data=None):
+    """Constructs the packet based on the operation type."""
+    reserved = 0x00
 
-def create_packet(opcode, *data):
-    """Creates a structured packet for UART communication."""
-    if opcode == 0xEC:
-        length = len(data) + 4  # Opcode + Reserved + Length (2 bytes) + Data
-        packet = bytearray([opcode, 0x00, length & 0xFF, (length >> 8) & 0xFF]) + data
+    if opcode == 0xec:
+        data = echo_data.encode("utf-8")
+        length = 4 + len(data)
+        msb = (length >> 8) & 0xFF
+        lsb = length & 0xFF
+        packet = [opcode, reserved, lsb, msb] + list(data)
     else:
-        data_bytes = b''.join(struct.pack('<i', num) for num in data)
-        length = len(data_bytes) + 4
-        packet = bytearray([opcode, 0x00, length & 0xFF, (length >> 8) & 0xFF]) + data_bytes
-    return packet
+        length = 12
+        msb = 0x00
+        lsb = length & 0xFF
+        data0 = list(struct.pack(">I", num1))
+        data1 = list(struct.pack(">I", num2))
+        packet = [opcode, reserved, lsb, msb] + data0 + data1
 
-def create_echo_packet(opcode, data):
-    length = len(data) + 4
-    packet = bytearray([opcode, 0x00, length & 0xFF, (length >> 8) & 0xFF]) + data
-    return packet
+    return bytearray(packet)
 
-def echo(message):
-    """Sends an echo message to the FPGA and prints the raw response."""
-    data = message.encode('utf-8')
-    packet = create_echo_packet(ECHO_OPCODE, data)
-    
-    with serial.Serial(PORT, BAUDRATE, timeout=1) as ser:
-        ser.write(packet)  # Send the packet
-        response = ser.read()  # Read response (adjust buffer size if needed)
-    
-    print("Raw Response:", response)  # Print the raw response
-    try:
-        print("Decoded Response:", response.decode('utf-8'))
-    except UnicodeDecodeError:
-        print("Response contains non-UTF-8 bytes:", response)
+def main():
+    ser = serial.Serial(SERIAL_PORT, BAUD_RATE, timeout=1)
 
-def add32(*operands):
-        packet = create_packet(ADD_OPCODE, *operands)
-        # print(packet)
-        with serial.Serial(PORT, BAUDRATE, timeout=1) as ser:
-            ser.write(packet)  # Send the packet
-            response = ser.read(1024)  # Read response (adjust buffer size if needed)
-            print("Raw Response:", list(response))
-            try:
-                print("Decoded Response:", response.decode('utf-8'))
-            except UnicodeDecodeError:
-                print("Response contains non-UTF-8 bytes:", response)
+    opcode = "EC"
+    echo_message = "hi"
+    A = int()
+    B = int()
 
-def mul32(*operands):
-        packet = create_packet(MUL_OPCODE, *operands)
-        # print(packet)
-        with serial.Serial(PORT, BAUDRATE, timeout=1) as ser:
-            ser.write(packet)  # Send the packet
-            response = ser.read(1024)  # Read response (adjust buffer size if needed)
-            print("Raw Response:", list(response))
-            try:
-                print("Decoded Response:", response.decode('utf-8'))
-            except UnicodeDecodeError:
-                print("Response contains non-UTF-8 bytes:", response)
+    if opcode == "EC":
+        packet = construct_packet(0xec, echo_data=echo_message)
+    else:
+        packet = construct_packet(opcode, A, B)
 
-def div32(A, B):
-        # A / B
-        if B == 0:
-            raise ValueError("Cannot divide by zero!")
-        packet = create_packet(ADD_OPCODE, A, B)
-        # print(packet)
-        with serial.Serial(PORT, BAUDRATE, timeout=1) as ser:
-            ser.write(packet)  # Send the packet
-            response = ser.read(1024)  # Read response (adjust buffer size if needed)
-            print("Raw Response:", list(response))
-            try:
-                print("Decoded Response:", response.decode('utf-8'))
-            except UnicodeDecodeError:
-                print("Response contains non-UTF-8 bytes:", response)
+    ser.write(packet)
+
+    formatted_packet = "".join(f"{b:02x}" for b in packet)
+    # print("Packet sent:", formatted_packet)
+
+    response = ser.read(256)
+    if response:
+        ascii_string = bytes.fromhex(response.hex().lstrip("0")[2:]).decode('utf-8')
+        print("Opcode: ", opcode, "; Output: ", ascii_string)
+    ser.close()
+
 
 if __name__ == "__main__":
-    echo("Wowie")
-
-    add_result = add32(10, 20, 30)
-    print("Addition result:", add_result)
-
-    multiply_result = mul32(2, 3, 4)
-    print("Multiplication result:", multiply_result)
-    
-    # Divide integers
-    try:
-        divide_result = div32(100, 25)
-        print("Division result:", divide_result)
-    except ValueError as e:
-        print(e)
+    main()
