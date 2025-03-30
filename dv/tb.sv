@@ -34,11 +34,17 @@ always begin
         ib_runner.delay();
         ib_runner.send_byte(8'hDE); // echo
         ib_runner.send_byte(8'h00); // reserved
-        ib_runner.send_byte(8'h06); // length LSB
+        ib_runner.send_byte(8'd12); // length LSB
         ib_runner.send_byte(8'h00); // length MSB
         // data to divide
         ib_runner.send_byte(8'h50);
-        ib_runner.send_byte(8'h2);
+        ib_runner.send_byte(8'h00);
+        ib_runner.send_byte(8'h00);
+        ib_runner.send_byte(8'h00);
+        ib_runner.send_byte(8'h50);
+        ib_runner.send_byte(8'h00);
+        ib_runner.send_byte(8'h00);
+        ib_runner.send_byte(8'h00);
     end
     #1ms;
 

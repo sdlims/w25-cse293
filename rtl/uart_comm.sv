@@ -71,6 +71,7 @@ logic [31:0] operand_2_d, operand_2_q;
 
 logic [0:0] div_valid;
 logic [31:0] div_o;
+logic [31:0] div_d, div_q;
 
 bsg_idiv_iterative bsg_idiv(
     .clk_i(clk),
@@ -96,6 +97,7 @@ always_comb begin
     frame_cnt_d = frame_cnt_q;
     operand_1_d = operand_1_q;
     operand_2_d = operand_2_q;
+    div_d = div_q;
 
     if (state_q == FETCH_OPCODE) begin
         rx_ready = 1;
@@ -140,31 +142,80 @@ always_comb begin
         end
     end else if (state_q == FETCH_OPERAND_1) begin
         rx_ready = 1'b1;
-        if (rx_valid) begin
+        if (rx_valid && frame_cnt_q == 4) begin
             frame_cnt_d++;
-            operand_1_d = rx_data;
+            operand_1_d[7:0] = rx_data;
+            state_d = FETCH_OPERAND_1;
+        end else if (rx_valid && frame_cnt_q == 5) begin
+            frame_cnt_d++;
+            operand_1_d[15:8] = rx_data;
+            state_d = FETCH_OPERAND_1;
+        end else if (rx_valid && frame_cnt_q == 6) begin
+            frame_cnt_d++;
+            operand_1_d[23:16] = rx_data;
+            state_d = FETCH_OPERAND_1;
+        end else if (rx_valid && frame_cnt_q == 7) begin
+            frame_cnt_d++;
+            operand_1_d[31:24] = rx_data;
+            state_d = FETCH_OPERAND_1;
+        end else if (frame_cnt_q == 8) begin
             state_d = FETCH_OPERAND_2;
         end
     end else if (state_q == FETCH_OPERAND_2) begin
         rx_ready = 1'b1;
-        if (rx_valid) begin
+        if (rx_valid && frame_cnt_q == 8) begin
             frame_cnt_d++;
-            operand_2_d = rx_data;
+            operand_2_d[7:0] = rx_data;
+            state_d = FETCH_OPERAND_2;
+        end else if (rx_valid && frame_cnt_q == 9) begin
+            frame_cnt_d++;
+            operand_2_d[15:8] = rx_data;
+            state_d = FETCH_OPERAND_2;
+        end else if (rx_valid && frame_cnt_q == 10) begin
+            frame_cnt_d++;
+            operand_2_d[23:16] = rx_data;
+            state_d = FETCH_OPERAND_2;
+        end else if (rx_valid && frame_cnt_q == 11) begin
+            frame_cnt_d++;
+            operand_2_d[31:24] = rx_data;
+            state_d = FETCH_OPERAND_2;
+        end else if (frame_cnt_q == 12) begin
             state_d = WAITING_FOR_OPERATION;
         end
     end else if (state_q == WAITING_FOR_OPERATION) begin
         rx_ready = tx_ready;
-        if (rx_ready && div_valid) begin
+        if (rx_ready && div_valid && frame_cnt_q == 12) begin
             frame_cnt_d++;
+            tx_valid = 1'b1;
+            tx_data = div_o[7:0];
+            state_d = WAITING_FOR_OPERATION;
+        end else if (rx_ready && div_valid && frame_cnt_q == 13) begin
+            frame_cnt_d++;
+            tx_valid = 1'b1;
+            tx_data = div_o[15:8];
+            state_d = WAITING_FOR_OPERATION;
+        end else if (rx_ready && div_valid && frame_cnt_q == 14) begin
+            frame_cnt_d++;
+            tx_valid = 1'b1;
+            tx_data = div_o[23:16];
+            state_d = WAITING_FOR_OPERATION;
+        end else if (rx_ready && div_valid && frame_cnt_q == 15) begin
+            frame_cnt_d++;
+            tx_valid = 1'b1;
+            tx_data = div_o[31:24];
+            state_d = WAITING_FOR_OPERATION;
+        end else if (rx_ready && div_valid && frame_cnt_q == 16) begin
+            frame_cnt_d = '0;
+            state_d = FETCH_OPCODE;
+        end
+    end
+end
+/*frame_cnt_d++;
             tx_data = div_o[7:0];
             tx_valid = 1;
             if (frame_cnt_d == length_q) begin
                 state_d = FETCH_OPCODE;
-            end
-        end
-    end
-end
-
+            end */
 always_ff @( posedge clk ) begin
     if (rst) begin
         state_q <= FETCH_OPCODE;
@@ -173,6 +224,7 @@ always_ff @( posedge clk ) begin
         frame_cnt_q <= '0;
         operand_1_q <= '0;
         operand_2_q <= '0;
+        div_q <= '0;
     end else begin
         state_q <= state_d;
         opcode_q <= opcode_d;
@@ -180,6 +232,7 @@ always_ff @( posedge clk ) begin
         frame_cnt_q <= frame_cnt_d;
         operand_1_q <= operand_1_d;
         operand_2_q <= operand_2_d;
+        div_q <= div_d;
     end
 end
 
